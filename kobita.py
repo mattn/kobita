@@ -272,11 +272,21 @@ class ItemView(gtk.Window):
         self.edit = gtksourceview2.View(self.buffer)
         sw.add(self.edit)
         vbox.pack_start(sw, True, True, 0)
+        hhbox = gtk.HBox(False, 5)
+        self.tags = []
+        for n in range(5):
+            tag = gtk.Entry()
+            tag.set_usize(20, -1)
+            hhbox.add(tag)
+            self.tags.append(tag)
+        vbox.pack_start(hhbox, False, False, 0)
+        hhbox = gtk.HBox(True, 5)
+        self.check = gtk.CheckButton('Private')
+        hhbox.add(self.check)
         button = gtk.Button("Publish")
         button.connect('clicked', self.on_publish)
-        vbox.pack_end(button, False, False, 0)
-        self.check = gtk.CheckButton('Private')
-        vbox.pack_end(self.check, False, False, 0)
+        hhbox.add(button)
+        vbox.pack_end(hhbox, False, False, 0)
         hbox.pack_start(vbox, False, True, 0)
 
         sw = gtk.ScrolledWindow()
@@ -329,6 +339,8 @@ class ItemView(gtk.Window):
         self.buffer.set_text(text)
         self.buffer.end_not_undoable_action()
         self.buffer.place_cursor(self.buffer.get_start_iter())
+        for n in range(len(self.data['tags'])):
+            self.tags[n].set_text(self.data['tags'][n]['name'])
         gtk.threads_leave()
 
         gtk.threads_enter()
@@ -345,7 +357,8 @@ class ItemView(gtk.Window):
             'token': self.token,
             'title': title,
             'body': body,
-            'tags': [{'name': 'qiita'}],
+            'tags': filter(lambda x: len(x['name']) > 0,
+                [{'name': x.get_text()} for x in self.tags]),
             'private': self.check.get_active()
         })
         if self.uuid is None:
