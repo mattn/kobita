@@ -169,7 +169,7 @@ class ListView(gtk.Window):
             return
         self.url_name = auth['url_name']
 
-        if not 'token' in config.keys():
+        if config is None or not 'token' in config.keys():
             try:
                 data = urllib.urlencode(auth)
                 r = urllib2.urlopen('https://qiita.com/api/v1/auth', data)
@@ -213,6 +213,7 @@ class ListView(gtk.Window):
         hbox = gtk.HBox(False, 5)
         hbox.add(label)
         password = gtk.Entry()
+        password.set_visibility(False)
         hbox.add(password)
         dialog.vbox.add(hbox)
         dialog.show_all()
