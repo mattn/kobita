@@ -123,6 +123,9 @@ class ListView(gtk.Window):
         button = gtk.Button("New Entry")
         button.connect('clicked', self.on_new_entry)
         vbox.pack_end(button, False, False, 0)
+        button = gtk.Button("Delete Entry")
+        button.connect('clicked', self.on_delete)
+        vbox.pack_end(button, False, False, 0)
         hbox.pack_start(vbox, False, True, 0)
 
         sw = gtk.ScrolledWindow()
@@ -141,6 +144,15 @@ class ListView(gtk.Window):
         self.iv.connect('delete-event', self.on_item_view_closed)
         self.iv.show_all()
 
+    def on_delete(self, w):
+        url = 'https://qiita.com/api/v1/items/%s?%s' % (
+            self.uuid, urllib.urlencode({'token': self.token}))
+        header = {
+            'X-HTTP-Method-Override': 'DELETE'
+        }
+        req = urllib2.Request(url, '', header)
+        r = urllib2.urlopen(req)
+
     def on_item_view_closed(self, w, d):
         self.tv.set_sensitive(True)
         self.emit('show')
@@ -148,8 +160,8 @@ class ListView(gtk.Window):
     def on_selection_changed(self, sel):
         if sel.get_selected()[1] is None:
             return
-        uuid = self.tv.get_model().get(sel.get_selected()[1], 0)[0]
-        item = filter(lambda x: x['uuid'] == uuid, self.data)[0]
+        self.uuid = self.tv.get_model().get(sel.get_selected()[1], 0)[0]
+        item = filter(lambda x: x['uuid'] == self.uuid, self.data)[0]
         self.view.load_html_string(item['body'], '')
 
     def on_row_activated(self, tv, path, vc):
